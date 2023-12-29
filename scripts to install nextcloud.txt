@@ -1,0 +1,52 @@
+sudo apt update
+sudo apt upgrade
+
+sudo apt install apache2 mariadb-server libapache2-mod-php php-gd php-mysql \
+php-curl php-mbstring php-intl php-gmp php-bcmath php-xml php-imagick php-zip
+
+sudo mysql -u root
+MariaDB [(none)]> CREATE DATABASE nextcloud;
+MariaDB [(none)]> CREATE USER 'nextclouduser'@'localhost' IDENTIFIED BY 'linux20';
+MariaDB [(none)]> GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextclouduser'@'localhost';
+MariaDB [(none)]> FLUSH PRIVILEGES;
+MariaDB [(none)]> exit;
+
+sudo mysql
+CREATE USER 'username'@'localhost' IDENTIFIED BY 'password';
+CREATE DATABASE IF NOT EXISTS nextcloud CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+GRANT ALL PRIVILEGES ON nextcloud.* TO 'username'@'localhost';
+FLUSH PRIVILEGES;
+
+sudo wget https://download.nextcloud.com/server/releases/nextcloud-28.0.1.zip
+
+sudo chown -R www-data:www-data /var/www/html/nextcloud
+
+sudo touch /etc/apache2/sites-available/nextcloud.conf
+
+sudo nano /etc/apache2/sites-available/nextcloud.conf
+
+<VirtualHost *:80>
+ServerName yourdomain.com
+DocumentRoot /var/www/html/nextcloud
+<Directory /var/www/html/nextcloud/>
+ Require all granted
+ Options FollowSymlinks MultiViews
+ AllowOverride All
+ <IfModule mod_dav.c>
+  Dav off
+ </IfModule>
+</Directory>ErrorLog /var/log/apache2/yourdomain.com.error_log
+CustomLog /var/log/apache2/yourdomain.com.access_log common
+</VirtualHost>
+
+sudo a2ensite nextcloud.conf
+
+sudo a2enmod rewrite
+
+apachectl -t
+
+sudo systemctl restart apache2
+
+sudo -u www-data php occ  maintenance:install \
+        --database='mysql' --database-name='nextcloud' \
+        --database-user='neowt' --database-pass='neowtpassword'
